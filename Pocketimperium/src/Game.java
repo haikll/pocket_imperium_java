@@ -5,6 +5,7 @@ class Game {
     private List<Player> players;
     private Board board;
     private int round;
+    private int currentStep;
 
     public void startGame() {
         setupGame();
@@ -13,6 +14,15 @@ class Game {
             playRound();
         }
         determineWinner();
+    }
+    
+    public List<Player> getPlayers() {
+        return players;
+    }
+    
+ // Add a getter
+    public int getCurrentStep() {
+        return currentStep;
     }
 
     private void setupGame() {
@@ -40,7 +50,10 @@ class Game {
                 players.add(new Player(name, false));
             }
         }
+        
         round = 1;
+        
+        
     }
 
     private void initialShipDeployment() {
@@ -60,63 +73,123 @@ class Game {
         for (int i = players.size() - 1; i >= 0; i--) {
             deployShips(players.get(i));
         }
+        
+        for (Player player : players) {
+            player.chooseCommandOrder();
+        }
+        
+        
+
     }
 
     private void deployShips(Player player) {
         Scanner scanner = new Scanner(System.in);
-        List<Sector> availableSectors = board.getSectors();
-        System.out.println(player.getName() + ", choose a sector to place 2 ships:");
-        for (int i = 0; i < availableSectors.size(); i++) {
-            Sector sector = availableSectors.get(i);
-            if (sector.getLevel() == 1 && sector.getOwner() == null) { // Only Level 1
-                System.out.println(i + ": Level " + sector.getLevel() + ", Unoccupied");
-            }
+        List<Sector> availableSectors = board.getSectors().stream()
+            .filter(sector -> sector.getLevel() == 1 && sector.getOwner() == null)
+            .toList();
+
+        if (availableSectors.isEmpty()) {
+            System.out.println("No available sectors for deployment.");
+            return;
         }
-        int sectorIndex;
-        do {
-            System.out.println("Enter the sector index:");
-            sectorIndex = scanner.nextInt();
-            if (sectorIndex < 0 || sectorIndex >= availableSectors.size() || 
-                availableSectors.get(sectorIndex).getOwner() != null || 
-                availableSectors.get(sectorIndex).getLevel() != 1) {
+
+        System.out.println(player.getName() + ", choose a sector to place 2 ships:");
+        availableSectors.forEach(sector ->
+            System.out.println(sector.getName() + ": Level " + sector.getLevel() + ", Unoccupied"));
+
+        Sector chosenSector = null;
+        while (chosenSector == null) {
+            System.out.println("Enter the sector name (e.g., A1):");
+            String sectorName = scanner.nextLine(); // Define sectorName inside the loop
+            chosenSector = availableSectors.stream()
+                .filter(sector -> sector.getName().equalsIgnoreCase(sectorName))
+                .findFirst()
+                .orElse(null);
+
+            if (chosenSector == null) {
                 System.out.println("Invalid selection. Try again.");
             }
-        } while (sectorIndex < 0 || sectorIndex >= availableSectors.size() || 
-                 availableSectors.get(sectorIndex).getOwner() != null || 
-                 availableSectors.get(sectorIndex).getLevel() != 1);
+        }
 
-        Sector chosenSector = availableSectors.get(sectorIndex);
+        for (int i = 0; i < 2; i++) {
+            chosenSector.getShips().add(new Ship(player));
+        }
+
+        // Set ownership of the sector
         chosenSector.setOwner(player);
-        System.out.println(player.getName() + " placed 2 ships on sector " + sectorIndex + ".");
+        System.out.println(player.getName() + " placed 2 ships in sector " + chosenSector.getName() + ".");
     }
 
 
     private void playRound() {
         System.out.println("Round " + round);
-        // Phase 1: Plan
-        System.out.println("Phase 1: Plan - Players choose the order of their commands.");
-        for (Player player : players) {
-            player.chooseCommandOrder();
-        }
+        for (int step = 0; step < 3; step++) {
+            currentStep = step;
+            System.out.println("Executing commands for step " + (step + 1));
 
-        // Phase 2: Perform
-        System.out.println("Phase 2: Perform - Execute commands in order.");
-        for (int i = 0; i < 3; i++) { // Each player has 3 commands
-            System.out.println("Executing commands for step " + (i + 1));
+            // Process commands based on priority (Expansion -> Exploration -> Extermination)
+            List<Player> expansionPlayers = new ArrayList<>();
+            List<Player> explorationPlayers = new ArrayList<>();
+            List<Player> exterminationPlayers = new ArrayList<>();
+
             for (Player player : players) {
-                Command command = player.getCommandAt(i); // Assume getCommandAt fetches command in chosen order
-                command.execute(player, board);
+                Command command = player.getCommandAt(currentStep);
+                if (command instanceof ExpandCommand) {
+                    expansionPlayers.add(player);
+                } else if (command instanceof ExploreCommand) {
+                    explorationPlayers.add(player);
+                } else if (command instanceof ExterminateCommand) {
+                    exterminationPlayers.add(player);
+                }
+            }
+
+            // Execute Expansion commands
+            for (Player player : expansionPlayers) {
+                Command command = player.getCommandAt(currentStep);
+                System.out.println(player.getName() + ", do you want to execute your command? (yes/no)");
+                Scanner scanner = new Scanner(System.in);
+                String response = scanner.nextLine();
+                if (response.equalsIgnoreCase("yes")) {
+                    player.executeCommand(command, this);
+                } else {
+                    System.out.println(player.getName() + " chose not to execute the command.");
+                }
+            }
+
+            // Execute Exploration commands
+            for (Player player : explorationPlayers) {
+                Command command = player.getCommandAt(currentStep);
+                System.out.println(player.getName() + ", do you want to execute your command? (yes/no)");
+                Scanner scanner = new Scanner(System.in);
+                String response = scanner.nextLine();
+                if (response.equalsIgnoreCase("yes")) {
+                    player.executeCommand(command, this);
+                } else {
+                    System.out.println(player.getName() + " chose not to execute the command.");
+                }
+            }
+
+            // Execute Extermination commands
+            for (Player player : exterminationPlayers) {
+                Command command = player.getCommandAt(currentStep);
+                System.out.println(player.getName() + ", do you want to execute your command? (yes/no)");
+                Scanner scanner = new Scanner(System.in);
+                String response = scanner.nextLine();
+                if (response.equalsIgnoreCase("yes")) {
+                    player.executeCommand(command, this);
+                } else {
+                    System.out.println(player.getName() + " chose not to execute the command.");
+                }
             }
         }
 
-        // Phase 3: Exploit
         System.out.println("Phase 3: Exploit - Sustain ships and score sectors.");
         for (Sector sector : board.getSectors()) {
             sector.sustainShips();
         }
         for (Player player : players) {
             System.out.println(player.getName() + " is choosing a sector to score.");
-            player.scoreSector(board); // Assume this method handles scoring logic
+            player.scoreSector(board);
         }
 
         round++;
