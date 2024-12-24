@@ -3,10 +3,13 @@ import java.util.*;
 
 class Sector {
     private int level;
+    private String name; // Name of the sector
     private Player owner;
     private List<Ship> ships;
 
-    public Sector(int level) {
+    public Sector(int level, String name) {
+        this.level = level;
+        this.name = name;
         this.level = level;
         this.ships = new ArrayList<>();
     }
@@ -15,21 +18,33 @@ class Sector {
         return level;
     }
 
+    public String getName() {
+        return name; // This allows other classes to access the sector name
+    }
+   
+    
     public Player getOwner() {
         return owner;
+    }
+    
+    public List<Ship> getShips() {
+        return ships;
     }
 
     public void setOwner(Player owner) {
         this.owner = owner;
+        if (owner != null) {
+            System.out.println(owner.getName() + " now controls " + this.name + ".");
+        }
     }
+
 
     public void sustainShips() {
         // Logic for sustaining ships
     }
 
     public void scoreSector() {
-        // Scoring logic
+        System.out.println("Sector " + name + " scored.");
+        // Add additional logic for scoring if needed
     }
-
-
 }
