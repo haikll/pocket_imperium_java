@@ -31,30 +31,65 @@ class Game {
         players = new ArrayList<>();
         Scanner scanner = new Scanner(System.in);
         List<String> chosenColors = new ArrayList<>();
+        List<String> chosenNames = new ArrayList<>();
         String[] availableColors = {"Red", "Blue", "Yellow"};
+
         for (int i = 1; i <= 3; i++) {
-            System.out.println("Enter name for Player " + i + " (or type 'AI' for a virtual player): ");
-            String name = scanner.nextLine();
-            String color = "";
+            String name;
             do {
-                System.out.println("Choose a color (available: " + String.join(", ", availableColors) + "): ");
-                color = scanner.nextLine();
-                if (chosenColors.contains(color)) {
-                    System.out.println("Color already chosen. Please select a different color.");
+                System.out.println("Enter name for Player " + i + " (or type 'AI' for a virtual player): ");
+                name = scanner.nextLine();
+                if (chosenNames.contains(name)) {
+                    System.out.println("Name already taken. Please choose a different name.");
                 }
-            } while (chosenColors.contains(color));
+            } while (chosenNames.contains(name));
+
+            chosenNames.add(name);
+
+            String color = "";
+            while (true) {
+                System.out.println("Choose a color (available: " + String.join(", ", getAvailableColors(availableColors, chosenColors)) + "): ");
+                color = scanner.nextLine();
+                if (!isValidColor(color, availableColors)) {
+                    System.out.println("Invalid color. Please choose exactly Red, Blue, or Yellow (case-sensitive).");
+                } else if (chosenColors.contains(color)) {
+                    System.out.println("Color already chosen. Please select a different color.");
+                } else {
+                    break;
+                }
+            }
+
             chosenColors.add(color);
+
             if (name.equalsIgnoreCase("AI")) {
                 players.add(new Player("AI Player " + i, true, new AggressiveStrategy()));
             } else {
                 players.add(new Player(name, false));
             }
         }
-        
+
         round = 1;
-        
-        
     }
+
+    private boolean isValidColor(String color, String[] availableColors) {
+        for (String validColor : availableColors) {
+            if (validColor.equals(color)) { // Case-sensitive comparison
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<String> getAvailableColors(String[] availableColors, List<String> chosenColors) {
+        List<String> available = new ArrayList<>();
+        for (String color : availableColors) {
+            if (!chosenColors.contains(color)) {
+                available.add(color);
+            }
+        }
+        return available;
+    }
+
 
     private void initialShipDeployment() {
         System.out.println("Initial ship deployment phase.");
