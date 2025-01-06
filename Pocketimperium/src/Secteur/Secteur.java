@@ -1,4 +1,5 @@
-package Jeu;
+package Secteur;
+import Joueur.Joueur;
 
 public class Secteur {
     private Position position;
