@@ -1,6 +1,6 @@
-package Jeu;
-
+package Carte;
 import java.util.List;
+import Secteur.*;
 
 public class Plateau {
     private static Plateau instance;
