@@ -1,4 +1,5 @@
-package Jeu;
+package Carte;
+import Joueur.Joueur;
 
 public class Extermination implements Strategie {
 
