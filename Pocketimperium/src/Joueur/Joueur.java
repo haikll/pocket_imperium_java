@@ -1,5 +1,9 @@
+package Joueur;
 
+import Carte.Commande;
 import java.util.List;
+import Secteur.*;
+import Carte.Strategie;
 
 public class Joueur {
     private String nom;
