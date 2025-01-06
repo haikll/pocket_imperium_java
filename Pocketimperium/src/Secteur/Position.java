@@ -1,4 +1,4 @@
-package Jeu;
+package Secteur;
 
 public class Position {
     private int x;
