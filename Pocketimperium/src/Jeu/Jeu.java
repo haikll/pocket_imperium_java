@@ -1,4 +1,8 @@
 package Jeu;
+import Joueur.Joueur;
+import Carte.Plateau;
+import Carte.Commande;
+
 
 public class Jeu {
     private int tours;
