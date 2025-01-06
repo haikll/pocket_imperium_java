@@ -15,11 +15,11 @@ class Game {
         }
         determineWinner();
     }
-    
+
     public List<Player> getPlayers() {
         return players;
     }
-    
+
  // Add a getter
     public int getCurrentStep() {
         return currentStep;
@@ -90,14 +90,32 @@ class Game {
         return available;
     }
 
+    String[][] map = {
+            {"II",  "",  "", "I",  "",  "I",  "",  "",  ""},
+            {"",  "",  "I",   "",  "II",  "",   "II",  "I", ""},
+            {"", "I",  "",   "",  "",  "",   "",  "",   "II"},
+            {"",  "",  "",   "III",  "III", "III",   "",  "",   "I"},
+            {"II", "I", "",   "III",  "III",  "III",   "",  "II",   ""},
+            {"",  "",  "II",   "III",  "III",  "III",   "I",  "",   ""},
+            {"",  "I",  "",  "",  "",  "",   "",  "II",   ""},
+            {"I",  "",  "",   "I",  "",  "I", "", "", ""},
+            {"",  "",  "II",   "",  "II",  "",   "I",  "",   "I"},
+    };
+
+
+
+
 
     private void initialShipDeployment() {
-        System.out.println("Initial ship deployment phase.");
-        System.out.println("Beginning with the start player and going clockwise,");
-        System.out.println("each player places 2 of their ships on a single,");
+        System.out.println("INITIAL SHIP DEPLOYMENT PHASE");
+        System.out.println("--------------------------------------------------------------------------");
+        System.out.println("1. Beginning with the start player and going clockwise,");
+        System.out.println("2. Each player places 2 of their ships on a single");
         System.out.println("unoccupied Level I system in an unoccupied sector.");
-        System.out.println("Then, starting with the last player and going anticlockwise,");
+        System.out.println("3. Then, starting with the last player and going anticlockwise,");
         System.out.println("each player repeats this action, placing 2 more of their ships on another unoccupied Level I system in an unoccupied sector.");
+        System.out.println("--------------------------------------------------------------------------");
+        System.out.println("This is the map of the galaxy that might help you :");
 
         // Deploy in clockwise order
         for (Player player : players) {
@@ -108,12 +126,12 @@ class Game {
         for (int i = players.size() - 1; i >= 0; i--) {
             deployShips(players.get(i));
         }
-        
+
         for (Player player : players) {
             player.chooseCommandOrder();
         }
-        
-        
+
+
 
     }
 
@@ -127,7 +145,7 @@ class Game {
             System.out.println("No available sectors for deployment.");
             return;
         }
-
+        displayBoard();
         System.out.println(player.getName() + ", choose a sector to place 2 ships:");
         availableSectors.forEach(sector ->
             System.out.println(sector.getName() + ": Level " + sector.getLevel() + ", Unoccupied"));
@@ -153,6 +171,7 @@ class Game {
         // Set ownership of the sector
         chosenSector.setOwner(player);
         System.out.println(player.getName() + " placed 2 ships in sector " + chosenSector.getName() + ".");
+        System.out.println("-------------------------------------------------");
     }
 
 
@@ -181,41 +200,59 @@ class Game {
             // Execute Expansion commands
             for (Player player : expansionPlayers) {
                 Command command = player.getCommandAt(currentStep);
-                System.out.println(player.getName() + ", do you want to execute your command? (yes/no)");
-                Scanner scanner = new Scanner(System.in);
-                String response = scanner.nextLine();
-                if (response.equalsIgnoreCase("yes")) {
-                    player.executeCommand(command, this);
-                } else {
-                    System.out.println(player.getName() + " chose not to execute the command.");
+                if (command instanceof ExpandCommand) { // Check if the command is ExpandCommand
+                    System.out.println(player.getName() + ", here's the current board:");
+                    displayBoard(); // Display the board
+                    System.out.println(player.getName() + ", do you want to execute your ExpandCommand? (y/n)");
+
+                    Scanner scanner = new Scanner(System.in);
+                    String response = scanner.nextLine();
+
+                    if (response.equalsIgnoreCase("y")) {
+                        // Execute the ExpandCommand
+                        command.execute(player, board, this);
+                    } else {
+                        System.out.println(player.getName() + " chose not to execute the ExpandCommand.");
+                    }
                 }
             }
 
             // Execute Exploration commands
             for (Player player : explorationPlayers) {
                 Command command = player.getCommandAt(currentStep);
-                System.out.println(player.getName() + ", do you want to execute your command? (yes/no)");
-                Scanner scanner = new Scanner(System.in);
-                String response = scanner.nextLine();
-                if (response.equalsIgnoreCase("yes")) {
-                    player.executeCommand(command, this);
-                } else {
-                    System.out.println(player.getName() + " chose not to execute the command.");
+                if (command instanceof ExploreCommand) { // Check if it's an ExploreCommand
+                    System.out.println(player.getName() + ", here's the current board:");
+                    displayBoard(); // Display the board
+                    System.out.println(player.getName() + ", do you want to execute your ExploreCommand? (y/n)");
+                    Scanner scanner = new Scanner(System.in);
+                    String response = scanner.nextLine();
+                    if (response.equalsIgnoreCase("y")) {
+                        // Cast to ExploreCommand and execute
+                        ((ExploreCommand) command).execute(player, board, this);
+                    } else {
+                        System.out.println(player.getName() + " chose not to execute the ExploreCommand.");
+                    }
                 }
             }
+
 
             // Execute Extermination commands
             for (Player player : exterminationPlayers) {
                 Command command = player.getCommandAt(currentStep);
-                System.out.println(player.getName() + ", do you want to execute your command? (yes/no)");
-                Scanner scanner = new Scanner(System.in);
-                String response = scanner.nextLine();
-                if (response.equalsIgnoreCase("yes")) {
-                    player.executeCommand(command, this);
-                } else {
-                    System.out.println(player.getName() + " chose not to execute the command.");
+                if (command instanceof ExterminateCommand) { // Check if it's an ExterminateCommand
+                    System.out.println(player.getName() + ", here's the current board:");
+                    displayBoard(); // Display the board
+                    System.out.println(player.getName() + ", do you want to execute your ExterminateCommand? (y/n)");
+                    Scanner scanner = new Scanner(System.in);
+                    String response = scanner.nextLine();
+                    if (response.equalsIgnoreCase("y")) {
+                        ((ExterminateCommand) command).execute(player, board, this); // Call the execute method
+                    } else {
+                        System.out.println(player.getName() + " chose not to execute the ExterminateCommand.");
+                    }
                 }
             }
+
         }
 
         System.out.println("Phase 3: Exploit - Sustain ships and score sectors.");
@@ -239,5 +276,27 @@ class Game {
             .max(Comparator.comparingInt(Player::calculateScore))
             .orElse(null);
         System.out.println("The winner is: " + winner.getName());
+    }
+
+    public void displayBoard() {
+        // Print column headers
+        System.out.print("   ");
+        for (int col = 1; col <= map[0].length; col++) {
+            System.out.printf("%-3d", col);
+        }
+        System.out.println();
+
+        // Print each row with row headers
+        for (int row = 0; row < map.length; row++) {
+            System.out.printf("%-2s ", (char) ('A' + row)); // Row labels (A, B, C, ...)
+            for (int col = 0; col < map[row].length; col++) {
+                if (map[row][col].isEmpty()) {
+                    System.out.print(" . "); // Print empty spaces as "."
+                } else {
+                    System.out.printf("%-3s", map[row][col]); // Print the board element
+                }
+            }
+            System.out.println();
+        }
     }
 }
