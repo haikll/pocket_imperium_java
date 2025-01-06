@@ -2,6 +2,8 @@ package ProjetLatest;
 import java.util.*;
 
 abstract class Command {
+    public abstract void execute(Player player, Board board, Game game);
+
     public abstract void execute(Player player, Board board);
 
     public static List<Command> allCommands = Arrays.asList(
