@@ -50,7 +50,7 @@ class Player {
 
 
     public void executeCommand(Command command, Game game) {
-        command.execute(this, Board.getInstance(), game);
+        command.execute(this, Board.getInstance());
     }
 
 
